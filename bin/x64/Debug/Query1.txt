@@ -1,0 +1,26 @@
+﻿SET @SDEven = (SELECT TseTrade.dbo.fn_Max_RowCount_ToDEven(@InsCode, @Periodicity, @EDEven, @EHEven, @Max_Row_Count))
+SELECT	TOP(1)	
+				(T1.Buy - T1.Sell) SgAll
+			,	((CASE WHEN T2.Buy>0 THEN 1 ELSE 0 END) + (CASE WHEN T2.Sell>0 THEN -1 ELSE 0 END)) SgMACD			
+			,	((CASE WHEN T3.Buy>0 THEN 1 ELSE 0 END) + (CASE WHEN T3.Sell>0 THEN -1 ELSE 0 END)) SgRSI
+			--,	(T4.Buy - T4.Sell) SgCCI
+			,	(T5.Buy - T5.Sell) SgSO
+			,	(T6.Buy - T6.Sell) SgBB
+			,	(T7.Buy - T7.Sell) SgFr
+			,	(T8.BUY_TEN_KIN - T8.SELL_TEN_KIN) SgIch1
+			,	(T8.BUY_KIN - T8.SELL_KIN) SgIch2
+			,	(T8.BUY_SENKO - T8.SELL_SENKO) SgIch3
+			,	(T8.BUY_SPAN_ABR - T8.SELL_SPAN_ABR) SgIch4
+			,	T1.PMeDem
+			,	T1.PMeOf
+			,	T1.QTitMeDem
+			,	T1.QTitMeOf
+FROM TseTrade.dbo.fn_AT_IND_Alligator_SIGNALS(@InsCode,@Periodicity,@SDEven,@SHEven, @EDEven, @EHEven, @MPeriod, 13,8,5,8,5,3,0.02) T1
+JOIN TseTrade.dbo.fn_AT_IND_MACD_SIGNALS(@InsCode,@Periodicity,@SDEven, @SHEven, @EDEven, @EHEven, @MPeriod, 26,12,9) T2 ON T2.DEven = T1.DEven AND T2.HEven = T1.HEven
+JOIN TseTrade.dbo.fn_AT_IND_RSI_SIGNALS(@InsCode,@Periodicity,@SDEven, @SHEven, @EDEven, @EHEven, @MPeriod,14, 70, 30) T3 ON T3.DEven = T1.DEven AND T3.HEven = T1.HEven
+--JOIN TseTrade.dbo.fn_AT_IND_CCI_SIGNALS(@InsCode,@Periodicity,@SDEven, @SHEven, @EDEven, @EHEven,20,100, -100, 0.015) T4 ON T4.DEven = T1.DEven AND T4.HEven = T1.HEven
+JOIN TseTrade.dbo.fn_AT_IND_STOCHASTIC_SIGNALS(@InsCode,@Periodicity,@SDEven, @SHEven, @EDEven, @EHEven,5,3,3,80,20) T5 ON T5.DEVEN = T1.DEven AND T5.HEVEN = T1.HEven
+JOIN TseTrade.dbo.fn_AT_IND_BB_signals(@InsCode,@Periodicity,@SDEven, @SHEven, @EDEven, @EHEven,20,2) T6 ON T6.DEven = T1.DEven AND T6.HEven = T1.HEven
+JOIN TseTrade.dbo.fn_AT_IND_Fractal_SIGNALS(@InsCode,@Periodicity,@SDEven, @SHEven, @EDEven, @EHEven) T7 ON T7.DEven = T1.DEven AND T7.HEven = T1.HEven
+JOIN TseTrade.dbo.fn_AT_IND_Ichimoku_SIGNAL(@InsCode,@Periodicity,@SDEven, @SHEven, @EDEven, @EHEven, 3, 26, 52, 9, 26, 26) T8 ON T8.DEven = T1.DEven AND T8.HEven = T1.HEven
+ORDER BY T1.DEven DESC, T1.HEven DESC
